@@ -1,11 +1,12 @@
 //dependencies
 var express = require("express");
-var database = require("../models");
+var db = require("../models");
 var axios = require("axios");
 var cheerio = require("cheerio");
+var router = express.Router();
 
 //GET route to scrape NYT
-app.get("/scrape", function(req, res) {
+router.get("/scrape", function(req, res) {
     //grab body of HTML with axios
     axios.get("https://www.nytimes.com").then(function(response) {
         //load into cheerio and save to $ for a shorthand selector
@@ -49,8 +50,18 @@ app.get("/scrape", function(req, res) {
     });
 });
 
+router.get("/", function(req, res) {
+  db.Article.find({"saved": false}, function(error, data) {
+    var hbsObject = {
+      article: data
+    };
+    console.log(hbsObject);
+    res.render("index", hbsObject);
+  });
+});
+
 //Route for getting all Articles from the db
-app.get("/articles", function(req, res) {
+router.get("/articles", function(req, res) {
     // Grab every document in the Articles collection
     db.Article.find({})
       .then(function(dbArticle) {
@@ -64,7 +75,7 @@ app.get("/articles", function(req, res) {
   });
 
 //Route for grabbing a specific Article by id, populate it with it's note
-app.get("/articles/:id", function(req, res) {
+router.get("/articles/:id", function(req, res) {
     // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
     db.Article.findOne({ _id: req.params.id })
       // ..and populate all of the notes associated with it
@@ -80,7 +91,7 @@ app.get("/articles/:id", function(req, res) {
   });
 
 //Route for saving/updating an Article's associated Note
-app.post("/articles/:id", function(req, res) {
+router.post("/articles/:id", function(req, res) {
     // Create a new note and pass the req.body to the entry
     db.Note.create(req.body)
       .then(function(dbNote) {
@@ -100,7 +111,7 @@ app.post("/articles/:id", function(req, res) {
   });
 
 //delete an article
-app.post("/articles/delete/:id", function(req, res) {
+router.post("/articles/delete/:id", function(req, res) {
     // Use the article id to find and update its saved boolean
     Article.findOneAndUpdate({ "_id": req.params.id }, {"saved": false, "notes": []})
     // Execute the above query
@@ -117,7 +128,7 @@ app.post("/articles/delete/:id", function(req, res) {
 });
 
 //create a new note
-app.post("/notes/save/:id", function(req, res) {
+router.post("/notes/save/:id", function(req, res) {
     // Create a new note and pass the req.body to the entry
     var newNote = new Note({
       body: req.body.text,
@@ -151,7 +162,7 @@ app.post("/notes/save/:id", function(req, res) {
   });
   
 //delete a note
-app.delete("/notes/delete/:note_id/:article_id", function(req, res) {
+router.delete("/notes/delete/:note_id/:article_id", function(req, res) {
     // Use the note id to find and delete it
     Note.findOneAndRemove({ "_id": req.params.note_id }, function(err) {
       // Log any errors
@@ -176,3 +187,5 @@ app.delete("/notes/delete/:note_id/:article_id", function(req, res) {
       }
     });
 });
+
+module.exports = router;
