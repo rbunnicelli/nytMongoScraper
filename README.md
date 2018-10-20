@@ -10,10 +10,10 @@
 
 
 ### Packages Used: 
--axios
--body-parser
--cheerio
--express
--express-handlebars
--mongoose
--morgan
+- axios
+- body-parser
+- cheerio
+- express
+- express-handlebars
+- mongoose
+- morgan
