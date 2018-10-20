@@ -41,7 +41,7 @@ app.get("/scrape", function(req, res) {
         var $ = cheerio.load(response.data);
 
         //grab articles
-        $("h2 span").each(function(i, element) {
+        $("article").each(function(i, element) {
             //empty array for results
             var result = {};
 
@@ -50,7 +50,7 @@ app.get("/scrape", function(req, res) {
             //link
               result.link = $(this).closest('a').attr("href");
             //summary
-            // result.summary = $(this).children('.summary').text().trim|| $(element).children('ul').text().trim();
+              result.summary = $(this).children('.summary').text().trim|| $(element).children('ul').text().trim();
 
     // Create a new Article using the `result` object built from scraping
     db.Article.findOne({ link: result.link })
